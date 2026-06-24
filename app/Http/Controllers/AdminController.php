@@ -27,6 +27,6 @@ class AdminController extends Controller
         }
         $agent = User::where('role', 'agent')->findOrFail($id);
         $agent->delete();
-        return response()->json(['message' => 'Ingatlanos sikeresen törölve a rendszerből.'], 200)
+        return response()->json(['message' => 'Ingatlanos sikeresen törölve a rendszerből.'], 200);
      }
 }
