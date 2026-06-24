@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CalendarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 // --- PUBLIKUS ÚTVONALAK (Vevőknek, bárki elérheti) ---
 Route::get('/public/calendars/{id}', [BookingController::class, 'getPublicCalendar']);
 Route::post('/public/bookings', [BookingController::class, 'store']);
+Route::post('login', [AuthController::class, 'login']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
