@@ -10,7 +10,7 @@ class Booking extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['availability_id', 'guest_name', 'guest_phone'];
+    protected $fillable = ['availability_id', 'guest_name', 'guest_email', 'guest_phone'];
 
     public function availability()
     {

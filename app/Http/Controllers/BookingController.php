@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Calendar;
 use App\Models\Availability;
+use Illuminate\Support\Facades\Mail;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\Booking;
+use App\Models\Calendar;
 use Illuminate\Http\Request;
+use App\Mail\BookingMailable;
 
 class BookingController extends Controller
 {
@@ -21,14 +24,25 @@ class BookingController extends Controller
     }
 
    
-    public function store(Request $request)
+   /*  public function store(Request $request)
     {
         $validated = $request->validate([
             'availability_id' => 'required|exists:availabilities,id',
             'guest_name' => 'required|string|max:255',
             'guest_phone' => 'required|string|max:50',
-        ]);
+            'guest_email' => 'required|email',
+        ], [
+            'guest_name' => "nem maradhat üresen",
+            'guest_phone' =>" kötelező mező",
+            'guest_email'=> " kötelező"
 
+
+        ]);
+        $qrData = "Foglalás: " . $booking->id . " | Név: " . $booking->guest_name;
+        $qrCode = QrCode::format('png')->size(200)->generate($qrData);
+        Mail::send('emails.booking_confirmed', ['booking' => $booking, 'qrCode' => base64_encode($qrCode)], function($message) use ($booking) {
+        $message->to($booking->guest_email)->subject('Foglalásod megerősítése');
+});
        
         $availability = Availability::findOrFail($validated['availability_id']);
 
@@ -42,9 +56,59 @@ class BookingController extends Controller
             'availability_id' => $availability->id,
             'guest_name' => $validated['guest_name'],
             'guest_phone' => $validated['guest_phone'],
+            'guest_email' => $validated['guest_email'],
         ]);
 
         $availability->update(['is_booked' => true]);
+
+        return response()->json([
+            'message' => 'Sikeres foglalás! Az ingatlanos hamarosan keresni fog.',
+            'booking' => $booking
+        ], 201);
+    } */
+   public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'availability_id' => 'required|exists:availabilities,id',
+            'guest_name' => 'required|string|max:255',
+            'guest_phone' => 'required|string|max:50',
+            'guest_email' => 'required|email',
+        ], [
+            'guest_name' => "nem maradhat üresen",
+            'guest_phone' => " kötelező mező",
+            'guest_email' => " kötelező"
+        ]);
+
+        // 1. Ellenőrizzük, hogy elérhető-e az időpont
+        $availability = Availability::findOrFail($validated['availability_id']);
+
+        if ($availability->is_booked) {
+            return response()->json(['message' => 'Ez az időpont sajnos már elkelt!'], 422);
+        }
+
+        // 2. Létrehozzuk a foglalást
+        $booking = Booking::create([
+            'availability_id' => $availability->id,
+            'guest_name' => $validated['guest_name'],
+            'guest_phone' => $validated['guest_phone'],
+            'guest_email' => $validated['guest_email'],
+        ]);
+
+        // 3. Frissítjük az időpontot foglaltra
+        $availability->update(['is_booked' => true]);
+
+        // 4. Most, hogy már létezik $booking, generálhatjuk a QR-t
+        $qrData = "Foglalás: " . $booking->id . " | Név: " . $booking->guest_name;
+$qrImage = QrCode::format('png')->size(250)->generate($qrData);
+
+// Az üzenetküldés módosítása
+Mail::send('emails.booking_confirmed', ['booking' => $booking], function($message) use ($booking, $qrImage) {
+    $message->to($booking->guest_email)
+            ->subject('Foglalásod megerősítése - Getingo');
+    
+    // Ezzel beágyazzuk a képet, és adunk neki egy azonosítót ('qr-kod')
+    $message->embedData($qrImage, 'qr-kod.png', 'image/png');
+});
 
         return response()->json([
             'message' => 'Sikeres foglalás! Az ingatlanos hamarosan keresni fog.',

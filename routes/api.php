@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Route;
 // --- PUBLIKUS ÚTVONALAK (Vevőknek, bárki elérheti) ---
 Route::get('/public/calendars/{id}', [BookingController::class, 'getPublicCalendar']);
 Route::post('/public/bookings', [BookingController::class, 'store']);
-Route::post('login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
 
 Route::middleware('auth:sanctum')->group(function () {

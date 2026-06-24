@@ -15,6 +15,7 @@ return new class extends Migration
         $table->id();
         $table->foreignId('availability_id')->constrained()->onDelete('cascade');
         $table->string('guest_name');
+        $table->string('guest_email');
         $table->string('guest_phone');
         $table->timestamps();
     });
