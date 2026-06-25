@@ -17,12 +17,16 @@ class SubscriptionController extends Controller
                 'success_url' => 'https://getingo.hu/billing/success',
                 'cancel_url' => 'https://getingo.hu/billing/cancel',
             ]); */
-            $checkoutSession = $user->newSubscription('default', 'price_teszt_kod')
-    ->checkout([
-        'success_url' => env('STRIPE_SUCCESS_URL'),
-        'cancel_url' => env('STRIPE_CANCEL_URL'),
-    ]);
+            $priceId = env('STRIPE_PRICE_ID');
+            $checkoutSession = $user->newSubscription('default', $priceId)
+            ->checkout([
+                'success_url' => 'http://localhost:4200/agent?success=true',
+                'cancel_url' => 'http://localhost:4200/agent?canceled=true',
+            ]);
 
+        // 4. Visszaadjuk a kigenerált Stripe URL-t az Angularnak
         return response()->json(['url' => $checkoutSession->url]);
     }
+
 }
+
