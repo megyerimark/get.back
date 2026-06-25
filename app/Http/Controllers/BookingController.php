@@ -22,7 +22,75 @@ class BookingController extends Controller
 
         return response()->json($calendar, 200);
     }
+  public function store(Request $request)
+{
+    // 1. Validáció
+    $validated = $request->validate([
+        'availability_id' => 'required|exists:availabilities,id',
+        'guest_name' => 'required|string|max:255',
+        'guest_phone' => 'required|string|max:50',
+        'guest_email' => 'required|email',
+    ]);
 
+    // 2. Ellenőrzés
+    $availability = Availability::findOrFail($validated['availability_id']);
+    if ($availability->is_booked) {
+        return response()->json(['message' => 'Ez az időpont sajnos már elkelt!'], 422);
+    }
+
+    // 3. Foglalás létrehozása - MOST JÖN LÉTRE A $booking
+    $booking = Booking::create([
+        'availability_id' => $availability->id,
+        'guest_name' => $validated['guest_name'],
+        'guest_phone' => $validated['guest_phone'],
+        'guest_email' => $validated['guest_email'],
+        'is_used' => false, // Alapértelmezett érték
+    ]);
+
+    $availability->update(['is_booked' => true]);
+
+    // 4. CSAK EZUTÁN jöhet az email és QR küldés
+    try {
+        $qrData = (string) $booking->id;
+        $qrImage = (string) QrCode::format('png')->size(250)->generate($qrData);
+
+        // A Mailable osztályt használjuk, mert ez a legbiztonságosabb
+        Mail::to($booking->guest_email)->send(new BookingMailable($booking, $qrImage));
+        
+    } catch (\Exception $e) {
+        \Log::error("Email küldési hiba: " . $e->getMessage());
+        // Itt nem returnölünk 500-ast, mert a foglalás már sikeres volt!
+    }
+
+    return response()->json([
+        'message' => 'Sikeres foglalás!',
+        'booking' => $booking
+    ], 201);
+}
+public function verifyQrCode(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|exists:bookings,id'
+        ]);
+
+        $booking = Booking::findOrFail($request->booking_id);
+
+        if ($booking->is_used) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Ezt a QR-kódot már felhasználták!'
+            ], 400);
+        }
+
+        $booking->update(['is_used' => true]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Sikeres azonosítás!',
+            'guest_name' => $booking->guest_name
+        ], 200);
+    }
+} // Ez a lezáró zárójel
    
    /*  public function store(Request $request)
     {
@@ -66,7 +134,7 @@ class BookingController extends Controller
             'booking' => $booking
         ], 201);
     } */
-   public function store(Request $request)
+/*    public function store(Request $request)
     {
         $validated = $request->validate([
             'availability_id' => 'required|exists:availabilities,id',
@@ -78,6 +146,7 @@ class BookingController extends Controller
             'guest_phone' => " kötelező mező",
             'guest_email' => " kötelező"
         ]);
+        $qrData = $booking->id;
 
         // 1. Ellenőrizzük, hogy elérhető-e az időpont
         $availability = Availability::findOrFail($validated['availability_id']);
@@ -115,4 +184,29 @@ class BookingController extends Controller
         ], 201);
 
     }
-}
+    public function verifyQrCode(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|exists:bookings,id'
+        ]);
+
+        $booking = Booking::findOrFail($request->booking_id);
+
+        if ($booking->is_used) {
+           
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Ezt a QR-kódot már felhasználták!'
+            ], 400);
+        }
+
+        $booking->update(['is_used' => true]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Sikeres azonosítás!',
+            'guest_name' => $booking->guest_name
+        ], 200);
+    } */
+
+

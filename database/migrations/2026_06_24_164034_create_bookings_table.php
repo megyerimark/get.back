@@ -17,6 +17,7 @@ return new class extends Migration
         $table->string('guest_name');
         $table->string('guest_email');
         $table->string('guest_phone');
+        $table->boolean('is_used')->default(false);
         $table->timestamps();
     });
 }

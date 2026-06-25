@@ -27,8 +27,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/calendars', [CalendarController::class, 'index']);
     Route::post('/calendars', [CalendarController::class, 'store']);
     Route::post('/calendars/{id}/availabilities', [CalendarController::class, 'addAvailability']);
-    // Ingatlanos naptár kezelés
-    Route::get('/calendars', [CalendarController::class, 'index']);
-    Route::post('/calendars', [CalendarController::class, 'store']);
-    Route::post('/calendars/{id}/availabilities', [CalendarController::class, 'addAvailability']);
+    Route::post('/bookings/verify', [BookingController::class, 'verifyQrCode']);
+    
 });
