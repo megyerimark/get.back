@@ -50,8 +50,10 @@ class BookingController extends Controller
     $availability->update(['is_booked' => true]);
 
     // 4. CSAK EZUTÁN jöhet az email és QR küldés
+
+    //Ha élesben használod, a getingo.hu címet kell beírnod.
     try {
-        $qrData = (string) $booking->id;
+        $qrData = "https://getingo.hu/verify-booking?id=" . $booking->id; 
         $qrImage = (string) QrCode::format('png')->size(250)->generate($qrData);
 
         // A Mailable osztályt használjuk, mert ez a legbiztonságosabb
