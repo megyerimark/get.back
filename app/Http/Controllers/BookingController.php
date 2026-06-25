@@ -96,23 +96,23 @@ class BookingController extends Controller
 
         // 3. Frissítjük az időpontot foglaltra
         $availability->update(['is_booked' => true]);
-
-        // 4. Most, hogy már létezik $booking, generálhatjuk a QR-t
+        // 4. Generáljuk a QR-t
         $qrData = "Foglalás: " . $booking->id . " | Név: " . $booking->guest_name;
-$qrImage = QrCode::format('png')->size(250)->generate($qrData);
+        $qrImage = (string) QrCode::format('png')->size(250)->generate($qrData);
 
-// Az üzenetküldés módosítása
-Mail::send('emails.booking_confirmed', ['booking' => $booking], function($message) use ($booking, $qrImage) {
-    $message->to($booking->guest_email)
-            ->subject('Foglalásod megerősítése - Getingo');
-    
-    // Ezzel beágyazzuk a képet, és adunk neki egy azonosítót ('qr-kod')
-    $message->embedData($qrImage, 'qr-kod.png', 'image/png');
-});
+        // 5. Email küldése (Itt adjuk át a qrImage-t a tömbben!)
+        Mail::send('emails.booking_confirmed', [
+            'booking' => $booking,
+            'qrImage' => $qrImage // <-- EZ HIÁNYZOTT!
+        ], function($message) use ($booking) {
+            $message->to($booking->guest_email)
+                    ->subject('Foglalásod megerősítése - Getingo');
+        });
 
         return response()->json([
             'message' => 'Sikeres foglalás! Az ingatlanos hamarosan keresni fog.',
             'booking' => $booking
         ], 201);
+
     }
 }
