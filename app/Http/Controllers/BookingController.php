@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BookingMailable;
 use App\Models\Availability;
-use Illuminate\Support\Facades\Mail;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\Booking;
 use App\Models\Calendar;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Mail\BookingMailable;
+use Illuminate\Support\Facades\Mail;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class BookingController extends Controller
 {
@@ -92,7 +93,29 @@ public function verifyQrCode(Request $request)
             'guest_name' => $booking->guest_name
         ], 200);
     }
-} // Ez a lezáró zárójel
+    public function getAgentCalendarsByToken($token){
+        $agent = User::where("booking_token", $token)->first();
+        if(!agent){
+        return response()->json(['message'=> 'Ingatlanos nem található!'], 404);
+        }
+        
+        $calendars = \App\Models\Calendar::where('user_id', $agent->id)
+            ->with(['availabilities' => function($query) {
+               
+                $query->where('is_booked', false)->orderBy('slot_time', 'asc');
+            }])
+            ->get();
+
+        return response()->json([
+            'agent_name' => $agent->name,
+            'calendars' => $calendars
+        ], 200);
+        
+    }
+
+} 
+
+
    
    /*  public function store(Request $request)
     {
