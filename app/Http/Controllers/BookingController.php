@@ -62,7 +62,7 @@ class BookingController extends Controller
         
     } catch (\Exception $e) {
         \Log::error("Email küldési hiba: " . $e->getMessage());
-        // Itt nem returnölünk 500-ast, mert a foglalás már sikeres volt!
+    
     }
 
     return response()->json([
@@ -93,9 +93,10 @@ public function verifyQrCode(Request $request)
             'guest_name' => $booking->guest_name
         ], 200);
     }
+
     public function getAgentCalendarsByToken($token){
         $agent = User::where("booking_token", $token)->first();
-        if(!agent){
+        if(!$agent){
         return response()->json(['message'=> 'Ingatlanos nem található!'], 404);
         }
         

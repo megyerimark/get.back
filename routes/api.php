@@ -15,7 +15,8 @@ Route::post('/public/bookings', [BookingController::class, 'store']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::get('/public/agent/{token}/calendars', [AuthController::class, 'register']);
+//Route::get('/public/agent/{token}/calendars', [\App\Http\Controllers\BookingController::class, 'getAgentCalendarsByToken']);
+Route::get('/public/agent/{token}/calendars', [BookingController::class, 'getAgentCalendarsByToken']);
 
 // --- VÉDETT ÚTVONALAK (Csak bejelentkezve) ---
 Route::middleware('auth:sanctum')->group(function () {

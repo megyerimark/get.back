@@ -13,6 +13,7 @@ class AgentController extends Controller
         return response()->json([
             'name' => $user->name,
             'email' => $user->email,
+            'booking_token' => $user->booking_token,
             'is_subscribed' => $user->subscribed('default'), 
             'subscription_ends_at' => $user->subscription('default')?->ends_at,
         ]);
