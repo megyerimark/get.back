@@ -36,4 +36,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+    public function calendars()
+    {
+        return $this->hasMany(\App\Models\Calendar::class);
+    }
+    
 }

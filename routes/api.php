@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin
     Route::get('/admin/agents', [AdminController::class, 'getAgents']);
     Route::delete('/admin/agents/{id}', [AdminController::class, 'deleteAgent']);
+    Route::get('/admin/dashboard', [AdminController::class, 'getDashboardData']);
     
 
     
