@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
              Route::post('/calendars', [CalendarController::class, 'store']);
              Route::post('/calendars/{id}/availabilities', [CalendarController::class, 'addAvailability']);
              Route::post('/bookings/verify', [BookingController::class, 'verifyQrCode']);
+             Route::post('/bookings/verify-manual', [BookingController::class, 'verifyManualCode']);
         }); 
     });
 });
